@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { API_BASE } from "@/lib/env";
 import UploadProgressModal from "@/components/UploadProgressModal";
+import UpgradeModal from "@/components/UpgradeModal";
 
 type ClassRow = { id: string; name: string; created_at: string };
 type Status = "idle" | "uploading" | "error";
@@ -18,6 +19,7 @@ export default function IntelligentUploadPage() {
   const [status, setStatus]           = useState<Status>("idle");
   const [error, setError]             = useState<string | null>(null);
   const [modalDocId, setModalDocId]   = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [usageSummary, setUsageSummary] = useState<{
     uploads: { used: number; limit: number; unlimited: boolean };
     ai_generations: { used: number; limit: number; unlimited: boolean };
@@ -72,9 +74,16 @@ export default function IntelligentUploadPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name }),
       });
+      if (res.status === 402) {
+        const body = await res.json().catch(() => ({}));
+        if (body?.detail?.code === "CLASS_LIMIT_REACHED") {
+          setShowUpgradeModal(true);
+          return;
+        }
+      }
       if (!res.ok) throw new Error("Failed to create class");
-      await loadClasses();
       const created = await res.json();
+      await loadClasses();
       setClassId(created.id);
       setNewClassName("");
     } catch (e: unknown) {
@@ -147,6 +156,10 @@ export default function IntelligentUploadPage() {
           fileName={file?.name ?? "document.pdf"}
           onClose={handleModalClose}
         />
+      )}
+
+      {showUpgradeModal && (
+        <UpgradeModal reason="class" onClose={() => setShowUpgradeModal(false)} />
       )}
 
       <div className="upload-container">

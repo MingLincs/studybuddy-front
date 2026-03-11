@@ -7,8 +7,7 @@ import { useSubscription, redirectToCheckout, redirectToPortal } from "@/lib/sub
 
 const FREE_FEATURES = [
   "3 classes",
-  "10 total document uploads",
-  "20 AI generations / month",
+  "3 total document uploads",
   "Flashcards & quizzes",
   "Concept maps",
   "Calendar sync",
@@ -166,8 +165,7 @@ export default function PricingPage() {
 
           {[
             ["Classes",              "Up to 3",    "Unlimited"],
-            ["Document uploads",     "Up to 10",   "Unlimited"],
-            ["AI generations",       "20 / month", "Unlimited"],
+            ["Document uploads",     "Up to 3",   "Unlimited"],
             ["Flashcards",           "✓",          "✓"],
             ["Quizzes",              "✓",          "✓"],
             ["Concept maps",         "✓",          "✓"],
