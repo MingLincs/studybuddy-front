@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { API_BASE } from "@/lib/env";
+import { useSubscription, FREE_UPLOAD_LIMIT, FREE_AI_MONTHLY_LIMIT } from "@/lib/subscription";
+import UpgradeModal from "@/components/UpgradeModal";
 
 type ClassRow = { id: string; name: string; created_at: string };
 type Status = "idle" | "uploading" | "done" | "error";
@@ -17,6 +19,8 @@ export default function IntelligentUploadPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState<"upload" | "ai" | null>(null);
+  const { isPro, uploadsUsed, uploadsLeft, aiUsed, aiLeft, atUploadLimit, atAiLimit } = useSubscription();
 
   const canUpload = !!file && !!classId && status !== "uploading";
 
@@ -71,6 +75,11 @@ export default function IntelligentUploadPage() {
 
   const handleIntelligentUpload = async () => {
     if (!file || !classId) return;
+
+    // ── Client-side limit checks ─────────────────────────────
+    if (!isPro && atUploadLimit) { setShowUpgradeModal("upload"); return; }
+    if (!isPro && atAiLimit)     { setShowUpgradeModal("ai");     return; }
+
     setStatus("uploading");
     setError(null);
     setResult(null);
@@ -106,6 +115,11 @@ export default function IntelligentUploadPage() {
 
   return (
     <>
+      {/* Upgrade modal */}
+      {showUpgradeModal && (
+        <UpgradeModal reason={showUpgradeModal} onClose={() => setShowUpgradeModal(null)} />
+      )}
+
       <div className="upload-container">
         <header className="upload-header">
           <h1>🚀 Upload Document</h1>
@@ -113,6 +127,23 @@ export default function IntelligentUploadPage() {
             Upload any document and I'll automatically extract concepts, create flashcards, and generate study materials!
           </p>
         </header>
+
+        {/* Usage banner for free users */}
+        {!isPro && (
+          <div className="usage-banner">
+            <div className="usage-stat">
+              <span className="usage-num">{uploadsUsed}</span>
+              <span className="usage-denom"> / {FREE_UPLOAD_LIMIT}</span>
+              <span className="usage-type"> uploads used</span>
+            </div>
+            <div className="usage-divider" />
+            <div className="usage-stat">
+              <span className="usage-num">{aiUsed}</span>
+              <span className="usage-denom"> / {FREE_AI_MONTHLY_LIMIT}</span>
+              <span className="usage-type"> AI generations this month</span>
+            </div>
+          </div>
+        )}
 
         <div className="upload-card">
           {/* Class Selection */}
@@ -321,6 +352,37 @@ export default function IntelligentUploadPage() {
       </div>
 
       <style jsx>{`
+        .usage-banner {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          background: white;
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 14px 20px;
+          margin-bottom: 20px;
+          flex-wrap: wrap;
+        }
+
+        .usage-stat {
+          font-size: 14px;
+          color: #64748b;
+        }
+
+        .usage-num {
+          font-weight: 700;
+          color: #7c3aed;
+          font-size: 16px;
+        }
+
+        .usage-denom { color: #94a3b8; }
+
+        .usage-divider {
+          width: 1px;
+          height: 20px;
+          background: #e2e8f0;
+        }
+
         .upload-container {
           min-height: 100vh;
           background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);

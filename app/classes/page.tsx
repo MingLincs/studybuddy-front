@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
 import { API_BASE } from "@/lib/env";
+import { useSubscription, FREE_CLASS_LIMIT } from "@/lib/subscription";
+import UpgradeModal from "@/components/UpgradeModal";
 
 type ClassRow = {
   id: string;
@@ -28,6 +30,8 @@ export default function ClassesPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [classToDelete, setClassToDelete] = useState<ClassRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { isPro } = useSubscription();
 
   useEffect(() => {
     loadClasses();
@@ -55,6 +59,12 @@ export default function ClassesPage() {
   async function createClass() {
     const name = newClassName.trim();
     if (!name) return;
+
+    // ── Client-side limit check ──────────────────────────────
+    if (!isPro && classes.length >= FREE_CLASS_LIMIT) {
+      setShowUpgradeModal(true);
+      return;
+    }
 
     setCreating(true);
     try {
@@ -249,6 +259,11 @@ export default function ClassesPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Upgrade modal */}
+      {showUpgradeModal && (
+        <UpgradeModal reason="class" onClose={() => setShowUpgradeModal(false)} />
       )}
 
       {/* New Class Modal */}

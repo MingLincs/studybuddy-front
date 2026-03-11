@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { useSubscription, redirectToCheckout, FREE_UPLOAD_LIMIT, FREE_AI_MONTHLY_LIMIT } from "@/lib/subscription";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -14,6 +15,7 @@ export default function Sidebar() {
   const [user, setUser] = useState<any>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { isPro, uploadsUsed, aiUsed } = useSubscription();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -131,7 +133,54 @@ export default function Sidebar() {
   <span className="nav-icon">📁</span>
   <span className="nav-text">Library</span>
 </Link>
+
+<Link
+  href="/pricing"
+  className={`nav-item ${isActive("/pricing") ? "active" : ""}`}
+>
+  <span className="nav-icon">💎</span>
+  <span className="nav-text">Pricing</span>
+</Link>
         </nav>
+
+        {/* Usage bar (free users only) */}
+        {!isPro && (
+          <div className="usage-panel">
+            <div className="usage-row">
+              <span className="usage-label">Uploads</span>
+              <span className="usage-count">{uploadsUsed} / {FREE_UPLOAD_LIMIT}</span>
+            </div>
+            <div className="usage-bar-bg">
+              <div
+                className="usage-bar-fill"
+                style={{ width: `${Math.min(100, (uploadsUsed / FREE_UPLOAD_LIMIT) * 100)}%` }}
+              />
+            </div>
+            <div className="usage-row" style={{ marginTop: 8 }}>
+              <span className="usage-label">AI this month</span>
+              <span className="usage-count">{aiUsed} / {FREE_AI_MONTHLY_LIMIT}</span>
+            </div>
+            <div className="usage-bar-bg">
+              <div
+                className="usage-bar-fill ai-fill"
+                style={{ width: `${Math.min(100, (aiUsed / FREE_AI_MONTHLY_LIMIT) * 100)}%` }}
+              />
+            </div>
+            <button
+              className="upgrade-cta"
+              onClick={() => redirectToCheckout().catch(() => {})}
+            >
+              ⚡ Upgrade to Pro
+            </button>
+          </div>
+        )}
+
+        {isPro && (
+          <div className="pro-badge-panel">
+            <span className="pro-crown">👑</span>
+            <span className="pro-label">Pro Plan</span>
+          </div>
+        )}
 
 
         {/* User Menu at Bottom */}
@@ -466,6 +515,93 @@ export default function Sidebar() {
 
           .logout-item:hover {
             background: #fee2e2;
+          }
+
+          /* Usage panel */
+          .usage-panel {
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+          }
+
+          .usage-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+          }
+
+          .usage-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.55);
+          }
+
+          .usage-count {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+          }
+
+          .usage-bar-bg {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 4px;
+          }
+
+          .usage-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+          }
+
+          .ai-fill {
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+          }
+
+          .upgrade-cta {
+            margin-top: 12px;
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+
+          .upgrade-cta:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+          }
+
+          /* Pro badge */
+          .pro-badge-panel {
+            margin: 12px 0;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, rgba(102,126,234,0.2) 0%, rgba(118,75,162,0.2) 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(102,126,234,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .pro-crown { font-size: 18px; }
+
+          .pro-label {
+            font-size: 14px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #f9a8d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
           }
 
           @media (max-width: 768px) {
