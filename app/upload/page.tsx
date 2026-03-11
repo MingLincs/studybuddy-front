@@ -120,7 +120,6 @@ export default function IntelligentUploadPage() {
       setUsageSummary(prev => prev ? {
         ...prev,
         uploads: { ...prev.uploads, used: prev.uploads.used + 1 },
-        ai_generations: { ...prev.ai_generations, used: prev.ai_generations.used + 1 },
       } : prev);
     } catch (e: unknown) {
       setStatus("error");
@@ -136,9 +135,7 @@ export default function IntelligentUploadPage() {
   };
 
   const uploadsUsed    = usageSummary?.uploads.used ?? 0;
-  const uploadsLimit   = usageSummary?.uploads.unlimited ? null : (usageSummary?.uploads.limit ?? 10);
-  const aiUsed         = usageSummary?.ai_generations.used ?? 0;
-  const aiLimit        = usageSummary?.ai_generations.unlimited ? null : (usageSummary?.ai_generations.limit ?? 20);
+  const uploadsLimit   = usageSummary?.uploads.unlimited ? null : (usageSummary?.uploads.limit ?? 3);
 
   return (
     <>
@@ -166,9 +163,6 @@ export default function IntelligentUploadPage() {
             <div className="usage-bar">
               <span className={uploadsLimit && uploadsUsed >= uploadsLimit ? "usage-chip warn" : "usage-chip"}>
                 {uploadsUsed}{uploadsLimit ? ` / ${uploadsLimit}` : ""} uploads used
-              </span>
-              <span className={aiLimit && aiUsed >= aiLimit ? "usage-chip warn" : "usage-chip"}>
-                {aiUsed}{aiLimit ? ` / ${aiLimit}` : ""} AI generations this month
               </span>
             </div>
           )}

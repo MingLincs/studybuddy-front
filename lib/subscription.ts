@@ -37,8 +37,8 @@ export interface BillingStatus {
 // ── Free-tier limits (must match backend constants) ───────────────
 
 export const FREE_CLASS_LIMIT       = 3;
-export const FREE_UPLOAD_LIMIT      = 10;
-export const FREE_AI_MONTHLY_LIMIT  = 20;
+export const FREE_UPLOAD_LIMIT      = 3;
+export const FREE_AI_MONTHLY_LIMIT  = 20; // kept for backend compat, not shown in UI
 
 // ── Hook ──────────────────────────────────────────────────────────
 

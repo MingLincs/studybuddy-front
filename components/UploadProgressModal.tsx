@@ -117,7 +117,7 @@ export default function UploadProgressModal({ docId, classId, fileName, onClose 
   }, [docId]);
 
   const handleViewMaterials = () => {
-    router.push(`/class/${classId}/dashboard`);
+    router.push(`/doc/${docId}`);
     onClose();
   };
 

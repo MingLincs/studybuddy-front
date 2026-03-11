@@ -156,16 +156,6 @@ export default function Sidebar() {
                 style={{ width: `${Math.min(100, (uploadsUsed / FREE_UPLOAD_LIMIT) * 100)}%` }}
               />
             </div>
-            <div className="usage-row" style={{ marginTop: 8 }}>
-              <span className="usage-label">AI this month</span>
-              <span className="usage-count">{aiUsed} / {FREE_AI_MONTHLY_LIMIT}</span>
-            </div>
-            <div className="usage-bar-bg">
-              <div
-                className="usage-bar-fill ai-fill"
-                style={{ width: `${Math.min(100, (aiUsed / FREE_AI_MONTHLY_LIMIT) * 100)}%` }}
-              />
-            </div>
             <button
               className="upgrade-cta"
               onClick={() => redirectToCheckout().catch(() => {})}
